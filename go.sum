@@ -1,0 +1,4 @@
+github.com/drhodes/golorem v0.0.0-20160418191928-ecccc744c2d9 h1:EQOZw/LCQ0SM4sNez3EhUf9gQalQrLrs4mPtmQa+d58=
+github.com/drhodes/golorem v0.0.0-20160418191928-ecccc744c2d9/go.mod h1:NsKVpF4h4j13Vm6Cx7Kf0V03aJKjfaStvm5rvK4+FyQ=
+github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
+github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
