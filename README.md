@@ -10,7 +10,7 @@ for your specific purpose. That's what it says on the tin.
 Nothing fancy, just the usual:
 
 ```
-$ go get github.com/lillesvin/goastic
+$ go install github.com/lillesvin/goastic@v0.0.2
 ```
 
 # Usage
@@ -25,15 +25,17 @@ Here's the output of `goastic -help`:
 $ goastic -help
 Usage of goastic:
   -baseurl string
-    	Base URL of Elasticsearch (default "http://localhost:9200/test")
+        Base URL of Elasticsearch (default "http://localhost:9200/test")
   -interval int
-    	Interval between requests in ms (default 5)
+        Interval between requests in ms (default 5)
   -readonly
-    	Only test reads
+        Only test reads
   -requests int
-    	Number of requests to make (default 10000)
+        Number of requests to make (default 10000)
+  -version
+        Show version and exit
   -workers int
-    	Number of parallel workers to run (default 2)
+        Number of parallel workers to run (default 2)
 ```
 
 After it's done making requests it will output some stats:

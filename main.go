@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 )
@@ -17,6 +18,7 @@ var (
 	workers     int
 	readOnly    bool
 	es_basename string
+	version     bool
 )
 
 func init() {
@@ -25,10 +27,16 @@ func init() {
 	flag.IntVar(&interval, "interval", 5, "Interval between requests in ms")
 	flag.IntVar(&workers, "workers", 2, "Number of parallel workers to run")
 	flag.BoolVar(&readOnly, "readonly", false, "Only test reads")
+	flag.BoolVar(&version, "version", false, "Show version and exit")
 	flag.Parse()
 }
 
 func main() {
+	if version {
+		fmt.Printf("%s %s\n", AppName, AppVersion)
+		os.Exit(0)
+	}
+
 	testCase := &ElasticTest{
 		BaseURL: es_basename,
 		Stats:   make(map[string]*ElasticTestStats),
