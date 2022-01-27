@@ -1,4 +1,4 @@
-module goastic
+module github.com/lillesvin/goastic
 
 go 1.17
 
