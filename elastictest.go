@@ -17,6 +17,7 @@ type ElasticTest struct {
 }
 
 type ElasticTestStats struct {
+	StartTime    time.Time
 	NumRequests  int
 	Failed       int
 	TotalRequest time.Duration
@@ -48,6 +49,7 @@ func (t *ElasticTest) PrintStats() {
 		fmt.Printf(" - Request time (max.):  %d ms\n", stats.MaxRequest.Milliseconds())
 		fmt.Printf(" - Request time (min.):  %d ms\n", stats.MinRequest.Milliseconds())
 		fmt.Printf(" - Request time (avg.):  %d ms\n", stats.AvgRequest.Milliseconds())
+		fmt.Printf(" - Wall time:            %.3f s\n", time.Now().Sub(stats.StartTime).Seconds())
 	}
 }
 
@@ -55,7 +57,7 @@ func (t *ElasticTest) HandleResponse(res *ElasticTestResponse) {
 	rt := res.Request.Type
 
 	if t.Stats[rt] == nil {
-		t.Stats[rt] = &ElasticTestStats{}
+		t.Stats[rt] = &ElasticTestStats{StartTime: time.Now()}
 	}
 
 	// Count all requests
@@ -64,6 +66,7 @@ func (t *ElasticTest) HandleResponse(res *ElasticTestResponse) {
 	// Count failed requests
 	if res.Completed == false {
 		t.Stats[rt].Failed += 1
+		fmt.Printf("* %s\n", res.Error)
 		return
 	}
 
@@ -86,22 +89,29 @@ func (t *ElasticTest) HandleResponse(res *ElasticTestResponse) {
 	}
 }
 
-func (t *ElasticTest) EnqueueRequests(queue chan *ElasticTestRequest, num int, readonly bool) {
+func (t *ElasticTest) EnqueueRequests(queue chan *ElasticTestRequest, queueKill chan bool, num int, readonly bool) {
 	for i := 0; i < num; i++ {
-		etr := &ElasticTestRequest{}
-		if readonly {
-			etr.Request, _ = t.genReadHTTP()
-			etr.Type = "read"
-		} else {
-			if i%2 == 0 {
+		select {
+		case <-queueKill:
+			fmt.Println("Closing request queue...")
+			close(queue)
+			return
+		default:
+			etr := &ElasticTestRequest{}
+			if readonly {
 				etr.Request, _ = t.genReadHTTP()
 				etr.Type = "read"
 			} else {
-				etr.Request, _ = t.genWriteHTTP()
-				etr.Type = "write"
+				if i%2 == 0 {
+					etr.Request, _ = t.genReadHTTP()
+					etr.Type = "read"
+				} else {
+					etr.Request, _ = t.genWriteHTTP()
+					etr.Type = "write"
+				}
 			}
+			queue <- etr
 		}
-		queue <- etr
 	}
 	close(queue)
 
@@ -109,7 +119,7 @@ func (t *ElasticTest) EnqueueRequests(queue chan *ElasticTestRequest, num int, r
 
 func (t *ElasticTest) EnsureIndex() {
 	client := &http.Client{
-		Timeout: 500 * time.Millisecond,
+		Timeout: 1500 * time.Millisecond,
 	}
 
 	r, err := http.NewRequest("PUT", t.BaseURL, nil)
